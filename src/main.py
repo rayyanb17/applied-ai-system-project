@@ -18,19 +18,80 @@ except ImportError:
 def main() -> None:
     songs = load_songs("data/songs.csv") 
 
-    # Starter example profile
-    user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    profiles = [
+        (
+            "Balanced baseline",
+            {
+                "genre": "pop",
+                "mood": "happy",
+                "energy": 0.8,
+                "acousticness": 0.2,
+                "valence": 0.8,
+                "danceability": 0.8,
+                "tempo": 0.65,
+                "liked_artists": ["Neon Echo"],
+                "seed_artist": "Neon Echo",
+            },
+        ),
+        (
+            "Conflict: aggressive but ambient",
+            {
+                "genre": "ambient",
+                "mood": "aggressive",
+                "energy": 0.95,
+                "acousticness": 0.9,
+                "tempo": 0.8,
+            },
+        ),
+        (
+            "Unknown categorical values",
+            {
+                "genre": "k-pop",
+                "mood": "melancholy",
+                "energy": 0.5,
+                "valence": 0.45,
+            },
+        ),
+        (
+            "Out-of-range energy",
+            {
+                "genre": "lofi",
+                "mood": "chill",
+                "energy": 1.7,
+                "acousticness": 0.95,
+            },
+        ),
+        (
+            "Artist-bias stress",
+            {
+                "genre": "jazz",
+                "mood": "relaxed",
+                "energy": 0.3,
+                "liked_artists": ["Neon Echo", "Neon Echo", "Neon Echo"],
+                "seed_artist": "Neon Echo",
+            },
+        ),
+        (
+            "Sparse numeric-only",
+            {
+                "energy": 0.35,
+                "tempo": 0.15,
+            },
+        ),
+    ]
 
-    recommendations = recommend_songs(user_prefs, songs, k=5)
+    for label, user_prefs in profiles:
+        recommendations = recommend_songs(user_prefs, songs, k=3)
 
-    print("\nTop recommendations:\n")
-    for rec in recommendations:
-        # You decide the structure of each returned item.
-        # A common pattern is: (song, score, explanation)
-        song, score, explanation = rec
-        print(f"{song['title']} - Score: {score:.2f}")
-        print(f"Because: {explanation}")
-        print()
+        print(f"\nProfile: {label}")
+        print("Top recommendations:\n")
+        for rec in recommendations:
+            # You decide the structure of each returned item.
+            # A common pattern is: (song, score, explanation)
+            song, score, explanation = rec
+            print(f"{song['title']} - Score: {score:.2f}")
+            print(f"Because: {explanation}")
+            print()
 
 
 if __name__ == "__main__":

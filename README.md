@@ -29,6 +29,12 @@ Some prompts to answer:
 
 You can include a simple diagram or bullet list if helpful.
 
+Here's how my system works. Each user upon logging in will be asked to choose their preferred genre, mood, energy, accousticness, valence, dancebility, and tempo. These values will be stored in the user's profile and allow the system to recommend some initial songs. The profile also stores the user's song history for reference, liked artists for a small recommendation bonus, and feedback counts to track how much the inferred preferences should override the initial explicit choice. As the user listens to songs, they can like it, which the system will note store that song in their history, and also use the song attributes (genre, mood, energy, accousticness, valence, dancebility, and tempo) to compute an inferred score for their preference. This is stored seperately from the explicit preference the user told the system, and is then put into a formula to find the user's true preference.
+
+Then the system determines which song is closest to the users preference. It does this by finding the difference between each song's values and their true preference, then subtracting that difference from 1, and then multiplying it by a weight. For tempo, the system first normalizes it to a 0-1 scale using the dataset min and max BPM, so it stays comparable to the other numeric features. The system also adds a small bonus if the song's artist matches one the user has previously liked. If the value is categorical, the weight is added if they match, but other is left out if they don't. The weighted scores for all seven components are summed together, and the song with the highest total score is recommended to the user.
+
+![alt text](image.png)
+
 ---
 
 ## Getting Started

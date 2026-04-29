@@ -9,7 +9,7 @@ import os
 from typing import Dict, Optional
 
 # ===== PASTE YOUR GEMINI API KEY HERE =====
-GEMINI_API_KEY = "AIzaSyDBlHLxzg7k7DdmitcYZWki8CPRTYMHRQQ"
+GEMINI_API_KEY = "Your API Key Here"
 # ==========================================
 
 logger = logging.getLogger(__name__)

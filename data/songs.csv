@@ -17,4 +17,24 @@ id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
 16,Velvet Signals,June Avenue,rnb,romantic,0.58,92,0.76,0.74,0.27
 17,Dust Trail Radio,Copper Pines,country,reflective,0.47,102,0.62,0.63,0.66
 18,Midnight Brass,Blue Static,blues,wistful,0.41,76,0.44,0.55,0.79
+19,Afterglow Avenue,Neon Echo,pop,romantic,0.67,114,0.79,0.77,0.24
+20,Silver Haze,LoRoom,lofi,focused,0.33,74,0.52,0.57,0.84
+21,Heatwave Circuit,Voltline,rock,aggressive,0.96,164,0.39,0.68,0.08
+22,Quiet Lanterns,Paper Lanterns,ambient,relaxed,0.24,58,0.61,0.38,0.94
+23,Velvet Hour,Slow Stereo,jazz,relaxed,0.39,88,0.74,0.56,0.87
+24,Chrome Skyline,Neon Echo,synthwave,moody,0.79,116,0.46,0.75,0.20
+25,Morning Signal,Indigo Parade,indie pop,happy,0.73,122,0.83,0.81,0.33
+26,Tide Runner,Tide Theory,reggae,chill,0.59,98,0.71,0.76,0.35
+27,Starlit Procession,North Hall,classical,dreamy,0.20,66,0.55,0.27,0.96
+28,Furnace Line,Black Forge,metal,intense,0.97,176,0.31,0.54,0.05
+29,Meadow Echoes,Maple Thread,folk,tender,0.34,82,0.68,0.47,0.90
+30,Flashpoint Drift,Arc Pulse,edm,euphoric,0.92,132,0.84,0.92,0.08
+31,Late Night Pulse,June Avenue,rnb,moody,0.56,94,0.72,0.73,0.29
+32,Open Road Hymn,Copper Pines,country,nostalgic,0.44,100,0.60,0.65,0.68
+33,Blue Ember,Blue Static,blues,reflective,0.43,78,0.48,0.53,0.77
+34,Sunlit Current,Neon Echo,pop,happy,0.81,126,0.86,0.84,0.17
+35,Deep Focus Tape,LoRoom,lofi,chill,0.31,70,0.58,0.59,0.82
+36,Blackout Anthem,Voltline,rock,intense,0.94,158,0.42,0.71,0.09
+37,Cloudline Drift,Paper Lanterns,ambient,dreamy,0.26,62,0.63,0.40,0.93
+38,Golden Afterhours,Slow Stereo,jazz,romantic,0.45,90,0.77,0.58,0.88
 

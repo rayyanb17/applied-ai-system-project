@@ -266,6 +266,103 @@ def load_songs(csv_path: str) -> List[Dict]:
     print(f"Loaded songs: {len(songs)}")
     return songs
 
+
+def retrieve_songs_for_task(music_profile: Dict, songs: List[Dict]) -> List[Dict]:
+    """
+    Retrieve and rank songs relevant to a study task (RAG retrieval stage).
+    
+    Args:
+        music_profile: Dict with keys like preferred_genres, preferred_moods, energy, etc.
+                      From task_parser.task_to_music_profile()
+        songs: List of song dicts from load_songs()
+    
+    Returns:
+        Ranked list of all songs scored for task relevance.
+    """
+    if not songs:
+        return []
+    
+    preferred_genres = set(g.lower() for g in music_profile.get("preferred_genres", []))
+    preferred_moods = set(m.lower() for m in music_profile.get("preferred_moods", []))
+    
+    min_bpm = min(float(song["tempo_bpm"]) for song in songs)
+    max_bpm = max(float(song["tempo_bpm"]) for song in songs)
+    
+    scored: List[Tuple[float, Dict]] = []
+    
+    for song in songs:
+        score = 0.0
+        
+        # Genre match (weight 0.30)
+        if preferred_genres and song.get("genre", "").lower() in preferred_genres:
+            score += 0.30
+        
+        # Mood match (weight 0.25)
+        if preferred_moods and song.get("mood", "").lower() in preferred_moods:
+            score += 0.25
+        
+        # Numeric feature closeness (weight 0.45 total)
+        energy_diff = abs(float(song.get("energy", 0.5)) - music_profile.get("energy", 0.5))
+        score += 0.10 * (1.0 - energy_diff)
+        
+        acoustic_diff = abs(float(song.get("acousticness", 0.5)) - music_profile.get("acousticness", 0.5))
+        score += 0.10 * (1.0 - acoustic_diff)
+        
+        valence_diff = abs(float(song.get("valence", 0.5)) - music_profile.get("valence", 0.5))
+        score += 0.10 * (1.0 - valence_diff)
+        
+        dance_diff = abs(float(song.get("danceability", 0.5)) - music_profile.get("danceability", 0.5))
+        score += 0.10 * (1.0 - dance_diff)
+        
+        tempo_norm = _normalize_tempo(float(song.get("tempo_bpm", 0.0)), min_bpm, max_bpm)
+        tempo_target = music_profile.get("tempo", 0.5)
+        tempo_diff = abs(tempo_norm - tempo_target)
+        score += 0.05 * (1.0 - tempo_diff)
+        
+        scored.append((score, song))
+    
+    scored.sort(key=lambda item: (-item[0], int(item[1].get("id", 0))))
+    return [song for _, song in scored]
+
+
+def build_study_playlist(retrieved_songs: List[Dict], duration_minutes: int) -> Tuple[List[Dict], float, str]:
+    """
+    Build a playlist from retrieved songs to fit a target duration.
+    
+    Args:
+        retrieved_songs: Ranked list from retrieve_songs_for_task()
+        duration_minutes: Target playlist duration
+    
+    Returns:
+        Tuple of (playlist, total_minutes, status_message)
+        playlist is list of songs in order
+        total_minutes is actual playlist duration estimate
+        status_message is user-friendly explanation
+    """
+    if not retrieved_songs or duration_minutes <= 0:
+        return [], 0.0, "No songs available or invalid duration."
+    
+    # Estimate song duration: ~3.5 minutes average
+    # (can be made smarter with real duration metadata later)
+    AVERAGE_SONG_DURATION = 3.5
+    
+    target_song_count = max(1, int(duration_minutes / AVERAGE_SONG_DURATION))
+    
+    # If we have fewer retrieved songs than needed, take all and warn
+    playlist = retrieved_songs[:target_song_count]
+    total_minutes = len(playlist) * AVERAGE_SONG_DURATION
+    
+    if len(playlist) < target_song_count:
+        status_msg = (
+            f"Study playlist built with {len(playlist)} songs (~{total_minutes:.0f} minutes). "
+            f"Requested {duration_minutes} minutes, but only {len(retrieved_songs)} songs match your task profile."
+        )
+    else:
+        status_msg = f"Study playlist built with {len(playlist)} songs (~{total_minutes:.0f} minutes)."
+    
+    return playlist, total_minutes, status_msg
+
+
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
     Functional implementation of the recommendation logic.

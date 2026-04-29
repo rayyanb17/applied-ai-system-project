@@ -1,233 +1,53 @@
-# 🎵 Music Recommender Simulation
+# Music Recommender & AI Playlist Generator
 
-## Project Summary
+## Original Project
 
-In this project you will build and explain a small music recommender system.
+My Modules 1-3 project was a basic music recommender. It used a user's profile and song features like genre, mood, energy, tempo, valence, danceability, and acousticness to suggest songs they would probably like.
 
-Your goal is to:
+## What This Project Does
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+This version turns a normal text request into a playlist for things like workouts, study sessions, road trips, relaxing, or cooking. I built it this way because it feels more natural than forcing users to fill out a profile first.
 
-Replace this paragraph with your own summary of what your version does.
+## Architecture Overview
 
----
+The flow is simple: the user types a request, Gemini checks whether it makes sense, Gemini parses the request, the activity gets turned into a music profile, and the retriever ranks the songs before the playlist is built. The system diagram shows that flow and where testing fits.
+![alt text](<assets/Gemini Music Recommendation-2026-04-29-010340.png>)
 
-## How The System Works
+## Setup
 
-Explain your design in plain language.
+1. Install dependencies with `pip install -r requirements.txt`.
+2. Add your Gemini API key in src/task_parser.py.
+3. Run `python -m src.main`.
+4. Pick mode `2` for the AI playlist generator.
 
-Some prompts to answer:
+## Sample Interactions
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
+- `I need music for a 90 minute workout` -> Gemini parses a workout request and the app builds a high-energy playlist.
+- `give me a 2-hour road trip playlist` -> Gemini treats it as a road trip and the retriever leans toward upbeat songs.
+- `Hi` -> Gemini flags it as too vague and asks for more detail.
 
-You can include a simple diagram or bullet list if helpful.
+## Design Decisions
 
-Here's how my system works. Each user upon logging in will be asked to choose their preferred genre, mood, energy, accousticness, valence, dancebility, and tempo. These values will be stored in the user's profile and allow the system to recommend some initial songs. The profile also stores the user's song history for reference, liked artists for a small recommendation bonus, and feedback counts to track how much the inferred preferences should override the initial explicit choice. As the user listens to songs, they can like it, which the system will note store that song in their history, and also use the song attributes (genre, mood, energy, accousticness, valence, dancebility, and tempo) to compute an inferred score for their preference. This is stored seperately from the explicit preference the user told the system, and is then put into a formula to find the user's true preference.
+I kept the original recommender instead of replacing it, because it is easier to explain and easier to test. Gemini handles the language part, and a fallback path stays in place if the API is unavailable.
 
-Then the system determines which song is closest to the users preference. It does this by finding the difference between each song's values and their true preference, then subtracting that difference from 1, and then multiplying it by a weight. For tempo, the system first normalizes it to a 0-1 scale using the dataset min and max BPM, so it stays comparable to the other numeric features. The system also adds a small bonus if the song's artist matches one the user has previously liked. If the value is categorical, the weight is added if they match, but other is left out if they don't. The weighted scores for all seven components are summed together, and the song with the highest total score is recommended to the user.
+The main trade-off is that the catalog is small, so some requests only get decent results instead of perfect ones. I preferred something simple and reliable over something flashy and hard to debug.
 
-![alt text](image.png)
+## Testing Summary
 
-![alt text](image-1.png)
+I use automated tests in tests/test_recommender.py to check parsing, ranking, playlist length, and edge cases. In the latest run, 8 out of 9 tests passed before I updated the vague-input check; after that fix, the parser now rejects unclear input instead of pretending it knows the answer. The code also logs warnings when parsing fails, which makes it easier to see what went wrong.
 
-![alt text](image-2.png)
-
-![alt text](image-3.png)
-
-![alt text](image-4.png)
-
-![alt text](image-5.png)
-
-## ![alt text](image-6.png)
-
-## Getting Started
-
-### Setup
-
-1. Create a virtual environment (optional but recommended):
-
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate      # Mac or Linux
-   .venv\Scripts\activate         # Windows
-
-   ```
-
-2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-3. Run the app:
-
-```bash
-python -m src.main
-```
-
-### Running Tests
-
-Run the starter tests with:
-
-```bash
-pytest
-```
-
-You can add more tests in `tests/test_recommender.py`.
-
----
-
-## Experiments You Tried
-
-Use this section to document the experiments you ran. For example:
-
-- What happened when you changed the weight on genre from 2.0 to 0.5
-- What happened when you added tempo or valence to the score
-- How did your system behave for different types of users
-
----
-
-## Limitations and Risks
-
-Summarize some limitations of your recommender.
-
-Examples:
-
-- It only works on a tiny catalog
-- It does not understand lyrics or language
-- It might over favor one genre or mood
-
-You will go deeper on this in your model card.
-
----
+I did a quick human check too by trying requests like workout and road-trip prompts, and the generated playlists matched the activity better after the clarification guardrail was added.
 
 ## Reflection
 
-Read and complete `model_card.md`:
+This project taught me that AI can be very fast and seem very helpful, but it can forget about minor things until you actual go through the code and see what it did, and what it missed.
 
-[**Model Card**](model_card.md)
+## Responsibility Reflection
 
-Write 1 to 2 paragraphs here about what you learned:
+The biggest limitation in this system is the small song catalog, which means some requests still get generic results. There is also some bias toward the activity types and genres I defined, so uncommon requests can be handled less well than common ones.
 
-- about how recommenders turn data into predictions
-- about where bias or unfairness could show up in systems like this
+This can be slightly misused as a user can use a prompt injection to run their own prompt on the Gemini. Fortunately, due to the fact that the system never actually runs anything it gets back from Gemini, just hands it back to the user, and the code makes sure the output is in a JSON format, the danger of this is mitigated.
 
----
+What surprised me while testing was that a vague prompt like "just give me music" looked harmless at first, but it actually produced weak behavior until I added the clarification rule. That made it clear that reliability is not just about passing tests, but about handling the messy inputs people really type.
 
-## 7. `model_card_template.md`
-
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}
-
-```markdown
-# 🎧 Model Card - Music Recommender Simulation
-
-## 1. Model Name
-
-Give your recommender a name, for example:
-
-> VibeFinder 1.0
-
----
-
-## 2. Intended Use
-
-- What is this system trying to do
-- Who is it for
-
-Example:
-
-> This model suggests 3 to 5 songs from a small catalog based on a user's preferred genre, mood, and energy level. It is for classroom exploration only, not for real users.
-
----
-
-## 3. How It Works (Short Explanation)
-
-Describe your scoring logic in plain language.
-
-How this system works is that at first the user's preference is determined by their explicit inputs, but is later on modified by their liked songs.
-
-- What features of each song does it consider
-- What information about the user does it use
-- How does it turn those into a number
-
-Try to avoid code in this section, treat it like an explanation to a non programmer.
-
----
-
-## 4. Data
-
-Describe your dataset.
-
-- How many songs are in `data/songs.csv`
-- Did you add or remove any songs
-- What kinds of genres or moods are represented
-- Whose taste does this data mostly reflect
-
----
-
-## 5. Strengths
-
-Where does your recommender work well
-
-You can think about:
-
-- Situations where the top results "felt right"
-- Particular user profiles it served well
-- Simplicity or transparency benefits
-
----
-
-## 6. Limitations and Bias
-
-Where does your recommender struggle
-
-Some prompts:
-
-- Does it ignore some genres or moods
-- Does it treat all users as if they have the same taste shape
-- Is it biased toward high energy or one genre by default
-- How could this be unfair if used in a real product
-
----
-
-## 7. Evaluation
-
-How did you check your system
-
-Examples:
-
-- You tried multiple user profiles and wrote down whether the results matched your expectations
-- You compared your simulation to what a real app like Spotify or YouTube tends to recommend
-- You wrote tests for your scoring logic
-
-You do not need a numeric metric, but if you used one, explain what it measures.
-
----
-
-## 8. Future Work
-
-If you had more time, how would you improve this recommender
-
-Examples:
-
-- Add support for multiple users and "group vibe" recommendations
-- Balance diversity of songs instead of always picking the closest match
-- Use more features, like tempo ranges or lyric themes
-
----
-
-## 9. Personal Reflection
-
-A few sentences about what you learned:
-
-- What surprised you about how your system behaved
-- How did building this change how you think about real music recommenders
-- Where do you think human judgment still matters, even if the model seems "smart"
-```
+The AI gve some pretty good suggestions. For instance, it implemented the Gemini integration very well, including having Gemini return its answer in a specific structure and then using that to create a response to the user. However, there was one suggestion that was not good. When determining if an input had too little information to create a playlist, it created a whole complicted function with keywords and such to determine if more information was needed, rather than simply just asking Gemini if more information was needed.
